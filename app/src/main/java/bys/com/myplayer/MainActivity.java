@@ -1,6 +1,8 @@
 package bys.com.myplayer;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.MediaPlayer;
@@ -22,11 +24,12 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 
+import java.io.File;
 import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
-
+    //TODO Piosenki się odświeżają w oncreate!
     private ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
     RecyclerView recyclerView;
     SeekBar seekBar;
@@ -52,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         recordAdapter.setOnItemClickListener(new RecordAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(final Button b, View v, final RecordInfo obj, int position) {
-                Log.d("XDDD", "ON ITEM CLICK!");
                 if (b.getText().equals("Stop")) {
                     mediaPlayer.stop();
                     mediaPlayer.reset();
@@ -73,7 +75,6 @@ public class MainActivity extends AppCompatActivity {
                                         mp.start();
                                         seekBar.setProgress(0);
                                         seekBar.setMax(mediaPlayer.getDuration());
-                                        Log.d("Prog", "run: " + mediaPlayer.getDuration());
                                     }
                                 });
                                 b.setText("Stop");
@@ -85,6 +86,23 @@ public class MainActivity extends AppCompatActivity {
                     };
                     handler.postDelayed(runnable, 100);
                 }
+            }
+        });
+
+        recordAdapter.setOnItemClickListenerDelete(new RecordAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Button b, View v, RecordInfo obj, int position) {
+                //TODO dodać opcje dialogową 
+                File file = new File((Uri.parse(obj.songUrl)).getPath());
+                //File file = new File(obj.songUrl);
+                if(file.exists()){
+                    Toast.makeText(getApplicationContext(),"File Exists",Toast.LENGTH_SHORT).show();
+                    boolean isSuccess = file.delete();
+                    Toast.makeText(getApplicationContext(),Boolean.toString(isSuccess),Toast.LENGTH_SHORT).show();
+                    refreshSystemMediaScanDataBase(getApplicationContext(),file.getPath());
+                }
+
+                Toast.makeText(getApplicationContext(),file.getPath(),Toast.LENGTH_SHORT).show();
             }
         });
         checkUserPermission();
@@ -101,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Log.d("Runwa", "run: " + 1);
                 if (mediaPlayer != null) {
                     seekBar.post(new Runnable() {
                         @Override
@@ -147,10 +164,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadSongs() {
-        Log.d("XDDD", "loadSongs invoked");
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0";
-        Cursor cursor = getContentResolver().query(uri, null, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%Music%"}, null);
+        Cursor cursor = getContentResolver().query(uri, null, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%MyRecords%"}, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 do {
@@ -166,5 +182,11 @@ public class MainActivity extends AppCompatActivity {
             recordAdapter = new RecordAdapter(MainActivity.this, records);
 
         }
+    }
+    public static void refreshSystemMediaScanDataBase(Context context, String docPath){
+        Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri contentUri = Uri.fromFile(new File(docPath));
+        mediaScanIntent.setData(contentUri);
+        context.sendBroadcast(mediaScanIntent);
     }
 }

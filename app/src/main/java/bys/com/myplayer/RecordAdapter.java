@@ -16,6 +16,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
     ArrayList<RecordInfo> records;
     Context context;
     OnItemClickListener onItemClickListener;
+    OnItemClickListener onItemClickListenerDelete;
 
     public RecordAdapter(Context context,ArrayList<RecordInfo> records) {
         this.context = context;
@@ -45,12 +46,22 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
             }
         });
 
+        recordHolder.btnDelete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(onItemClickListenerDelete != null){
+                    onItemClickListenerDelete.onItemClick(recordHolder.btnDelete,view,recordInfo,i);
+                }
+            }
+        });
+
     }
 
     @Override
     public int getItemCount() {
         return records.size();
     }
+
 
     public interface OnItemClickListener {
         void onItemClick(Button b,View v,RecordInfo obj,int position);
@@ -60,11 +71,15 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
         this.onItemClickListener = onItemClickListener;
     }
 
+    public void setOnItemClickListenerDelete(final OnItemClickListener onItemClickListener){
+        this.onItemClickListenerDelete = onItemClickListener;
+    }
+
 
 
     public class RecordHolder extends RecyclerView.ViewHolder {
         TextView number,date,duration;
-        Button btnAction;
+        Button btnAction,btnDelete;
         public RecordHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -72,6 +87,7 @@ public class RecordAdapter extends RecyclerView.Adapter<RecordAdapter.RecordHold
             date = (TextView) itemView.findViewById(R.id.date);
             duration = (TextView) itemView.findViewById(R.id.duration);
             btnAction = (Button) itemView.findViewById(R.id.button);
+            btnDelete = (Button) itemView.findViewById(R.id.button2);
         }
     }
 }
