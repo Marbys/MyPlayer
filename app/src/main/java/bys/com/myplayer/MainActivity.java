@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         recordAdapter.setOnItemClickListenerDelete(new RecordAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Button b, View v, RecordInfo obj, int position) {
-                //TODO dodać opcje dialogową 
+                //TODO dodać opcje dialogową
                 File file = new File((Uri.parse(obj.songUrl)).getPath());
                 //File file = new File(obj.songUrl);
                 if(file.exists()){
@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
                     boolean isSuccess = file.delete();
                     Toast.makeText(getApplicationContext(),Boolean.toString(isSuccess),Toast.LENGTH_SHORT).show();
                     refreshSystemMediaScanDataBase(getApplicationContext(),file.getPath());
+                    recordAdapter.notifyDataSetChanged();
                 }
 
                 Toast.makeText(getApplicationContext(),file.getPath(),Toast.LENGTH_SHORT).show();
