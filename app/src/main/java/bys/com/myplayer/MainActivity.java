@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -29,7 +30,6 @@ import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
-    //TODO Piosenki się odświeżają w oncreate!
     private ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
     RecyclerView recyclerView;
     SeekBar seekBar;
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(Button b, View v, RecordInfo obj, int position) {
                 //TODO dodać opcje dialogową
                 File file = new File((Uri.parse(obj.songUrl)).getPath());
-                //File file = new File(obj.songUrl);
+
                 if(file.exists()){
                     Toast.makeText(getApplicationContext(),"File Exists",Toast.LENGTH_SHORT).show();
                     boolean isSuccess = file.delete();
@@ -106,7 +106,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(),file.getPath(),Toast.LENGTH_SHORT).show();
             }
         });
+
         checkUserPermission();
+        recordAdapter.notifyDataSetChanged();
         Thread t = new MyThread();
         t.start();
     }
@@ -167,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadSongs() {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String selection = MediaStore.Audio.Media.IS_MUSIC + "!=0";
-        Cursor cursor = getContentResolver().query(uri, null, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%MyRecords%"}, null);
+        Cursor cursor = getContentResolver().query(uri, null, MediaStore.Audio.Media.DATA + " like ? ", new String[]{"%MyRecord%"}, null);
         if (cursor != null) {
             if (cursor.moveToFirst()) {
                 do {
@@ -181,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
             }
             cursor.close();
             recordAdapter = new RecordAdapter(MainActivity.this, records);
-
         }
     }
     public static void refreshSystemMediaScanDataBase(Context context, String docPath){
